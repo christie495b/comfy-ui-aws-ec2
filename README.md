@@ -1,10 +1,10 @@
 # comfy-ui-aws-ec2
 comfy-ui-aws installation steps
 
-# Update system
+## Update system
 sudo apt update && sudo apt upgrade -y
 
-# Install basic requirements
+## Install basic requirements
 sudo apt install -y \
     python3-pip \
     python3-venv \
@@ -13,45 +13,45 @@ sudo apt install -y \
     build-essential \
     software-properties-common
 
-# Install required packages
+## Install required packages
 sudo apt install -y gcc make linux-headers-$(uname -r)
 
-# Download and install AWS-optimized NVIDIA driver
+## Download and install AWS-optimized NVIDIA driver
 wget https://s3.amazonaws.com/ec2-linux-nvidia-drivers/grid-15.0/NVIDIA-Linux-x86_64-grid-15.0.tar.gz
 tar -xf NVIDIA-Linux-x86_64-grid-15.0.tar.gz
 sudo ./NVIDIA-Linux-x86_64-grid-15.0.run --silent --dkms
 
-# Verify installation
+## Verify installation
 nvidia-smi
 
 wget https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda_12.1.0_530.30.02_linux.run
 sudo sh cuda_12.1.0_530.30.02_linux.run --silent --toolkit --toolkitpath=/usr/local/cuda-12.1
 
-# Add CUDA to PATH
+## Add CUDA to PATH
 echo 'export PATH=/usr/local/cuda-12.1/bin:$PATH' >> ~/.bashrc
 echo 'export LD_LIBRARY_PATH=/usr/local/cuda-12.1/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
 source ~/.bashrc
 
 
-# Create and activate virtual environment
+## Create and activate virtual environment
 python3 -m venv comfyui_env
 source comfyui_env/bin/activate
 
-# Clone ComfyUI
+## Clone ComfyUI
 git clone https://github.com/comfyanonymous/ComfyUI.git
 cd ComfyUI
 
-# Install PyTorch with CUDA support
+## Install PyTorch with CUDA support
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
-# Install ComfyUI requirements
+## Install ComfyUI requirements
 pip install -r requirements.txt
 
-# Install CloudWatch agent
+## Install CloudWatch agent
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
 sudo dpkg -i amazon-cloudwatch-agent.deb
 
-# Configure CloudWatch for GPU monitoring
+## Configure CloudWatch for GPU monitoring
 sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json > /dev/null <<EOL
 {
     "agent": {
@@ -71,29 +71,29 @@ sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json > /de
 }
 EOL
 
-# Start CloudWatch agent
+## Start CloudWatch agent
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
 
-# From the ComfyUI directory
+## From the ComfyUI directory
 python main.py --listen 0.0.0.0 --port 8188
 
-# Create a clean mount point
+## Create a clean mount point
 sudo mkdir -p /mnt/comfyui-models
 sudo chown ubuntu:ubuntu /mnt/comfyui-models
 
-# Format nvme1n1 with ext4
+## Format nvme1n1 with ext4
 sudo mkfs -t ext4 /dev/nvme1n1
 
-# Create directory if it doesn't exist
+## Create directory if it doesn't exist
 sudo mkdir -p /mnt/nvme
 
-# Mount the drive
+## Mount the drive
 sudo mount /dev/nvme1n1 /mnt/nvme
 
-# Set permissions
+## Set permissions
 sudo chown ubuntu:ubuntu /mnt/nvme
 
-# Check mount
+## Check mount
 df -h /mnt/nvme
 
 # Check permissions
